@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# create by evan
+
+. etc/config
+
+bin=`dirname $0`
+base=$(cd "$bin";cd ..;pwd)
+
+if [[ -z "$1" ]]; then
+    echo "必须提供一个域名参数"
+    exit 1
+fi
+domain=$1
+sub_file="$base/subject/$domain.conf"
+enduserbase=$base/certs/enduser
+
+echo "生成 $domain 私钥"
+mkdir -p $enduserbase/private
+d_pk="$enduserbase/private/$domain.key"
+eval "$prog genrsa -out $d_pk 4096 $log"
+
+. $sub_file
+csr="$enduserbase/$domain.csr"
+crt="$enduserbase/$domain.crt"
+echo "生成 CSR 文件"
+
+echo $subject
+
+eval "$prog req -new -sha256 -subj \"$subject\" -key $d_pk -out $csr $log"
+
+echo "用Middle CA 给 CSR 文件签字"
+
+eval "$prog ca -batch -config $base/etc/middle.conf -notext -in $csr -out $crt $log"
+
+echo "用 ROOT CA, Middle CA 生成 crl.chain 文件"
+
+root_crt="$base/certs/root/certs/cacert.pem"
+middle_crt="$base/certs/middle/certs/cacert.pem"
+middle_crl="$base/certs/middle/certs/middle.crl.pem"
+
+#cat $root_crt $middle_crt $middle_crl > "$enduserbase/$domain.crl.chain"

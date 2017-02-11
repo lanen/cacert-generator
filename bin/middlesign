@@ -1,0 +1,35 @@
+#!/bin/bash
+
+. etc/config
+
+bin=`dirname $0`
+base=$(cd "$bin";cd ..;pwd)
+home=certs/middle
+dir=$base/$home
+
+# just for middle ca
+cert_file=$dir/$certs_dir/cacert${ca_file_ext}
+csr_file=$dir/$certs_dir/middle${csr_file_ext}
+pk=$dir/private/cakey${ca_private_key_file_ext}
+
+days=3560
+
+mkdir -p $dir/$private_key_dir # 用于存放私钥
+mkdir -p $dir/$certs_dir
+
+echo "Sign ${csr_file}"
+ca_conf="-config $base/etc/root.conf -passin pass:qweasd"
+eval "$prog ca -batch $ca_conf  -in $csr_file -out $cert_file $log"
+
+#sleep 2
+echo "Gen $cert_file !"
+crl_file_pem=$dir/$certs_dir/middle.crl${ca_file_ext}
+crl_file=$dir/$certs_dir/middle.crl
+
+# 以下后续跟进
+echo "Create middle crl.pem"
+eval "$prog ca -config $base/etc/middle.conf -gencrl -keyfile $pk -cert $cert_file -out $crl_file_pem $log"
+
+echo "Create middle crl"
+eval "$prog crl -inform PEM -in $crl_file_pem -outform DER -out $crl_file $log"
+

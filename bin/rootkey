@@ -1,0 +1,37 @@
+#!/bin/bash
+# create by evan
+
+. etc/config
+
+bin=`dirname $0`
+base=$(cd "$bin";cd ..;pwd)
+home=certs/root
+dir=$base/$home
+
+
+cert_file=$dir/$certs_dir/cacert${ca_file_ext}
+pk=$dir/private/cakey${ca_private_key_file_ext}
+days=3560
+
+# 加密算法
+encode="-aes256 -passout pass:qweasd"
+decode="-passin pass:qweasd"
+
+mkdir -p $dir/$private_key_dir # 用于存放私钥
+mkdir -p $dir/$certs_dir
+touch $dir/${ca_database_file}
+echo "1000" > $dir/${ca_serial_file}
+echo "1000" > $dir/${ca_crl_number_file}
+
+echo "Create RSA private key: $pk, $encode "
+eval "$prog genrsa $encode -out $pk 4096 $log"
+
+echo "Create certificate: ${cert_file}"
+eval "$prog req -new -x509 -sha256 -days $days -config $base/etc/root.conf -extensions v3_ca  -key $pk $decode -out $cert_file $log"
+
+crl_file_pem=$dir/$certs_dir/ca.crl${ca_file_ext}
+crl_file=$dir/$certs_dir/ca.crl
+echo "openssl gencrl"
+eval "$prog ca -config $base/etc/root.conf $decode -gencrl -keyfile $pk -cert $cert_file -out $crl_file_pem $log"
+echo "openssl crl"
+eval "$prog crl -inform PEM -in $crl_file_pem -outform DER -out $crl_file $log "

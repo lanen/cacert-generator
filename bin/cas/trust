@@ -1,0 +1,44 @@
+#!/bin/bash
+
+
+# 目的是使用 keytool 将两个keystore 证书做双向认证
+bin=`dirname $0`
+base=$(cd "$bin";cd ../..;pwd)
+
+ks=$base/certs/keystore
+
+prog="/usr/bin/openssl"
+kt=`which keytool`
+
+
+if [ $# != 2 ]; then
+    echo "必须输入两个参数"
+    exit 1
+fi
+
+
+
+name1=$1
+name2=$2
+crt_file1="$base/certs/enduser/${name1}.crt"
+crt_file2="$base/certs/enduser/${name2}.crt"
+pk_file="$base/certs/enduser/private/${name}.key"
+
+if [[ ! -f $crt_file1 ]]; then
+    echo "$crt_file1 not found"
+    exit 1
+fi
+
+if [[ ! -f $crt_file2 ]]; then
+    echo "$crt_file2 not found"
+    exit 1
+fi
+
+pass1="${name1}123"
+pass2="${name2}123"
+
+jks_file1="$ks/$name1.jks"
+jks_file2="$ks/$name2.jks"
+
+eval "$kt -importcert -keystore $jks_file1 -storepass $pass1 -file $crt_file2 -alias $name2 -noprompt"
+eval "$kt -importcert -keystore $jks_file2 -storepass $pass2 -file $crt_file1 -alias $name1 -noprompt"

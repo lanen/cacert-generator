@@ -1,0 +1,29 @@
+#!/bin/bash
+# create by evan
+
+. etc/config
+
+bin=`dirname $0`
+base=$(cd "$bin";cd ..;pwd)
+home=certs/middle
+dir=$base/$home
+
+# just for middle ca
+cert_file=$dir/$certs_dir/cacert${ca_file_ext}
+csr_file=$dir/$certs_dir/middle${csr_file_ext}
+pk=$dir/private/cakey${ca_private_key_file_ext}
+
+days=3560
+
+mkdir -p $dir/$private_key_dir # 用于存放私钥
+mkdir -p $dir/$certs_dir
+
+touch $dir/${ca_database_file}
+echo "1000" > $dir/${ca_serial_file}
+echo "1000" > $dir/${ca_crl_number_file}
+
+echo "Create RSA private key: $pk"
+eval "$prog genrsa -out $pk 4096 $log"
+
+echo "Create CSR file: ${csr_file}"
+eval "$prog req -key $pk -new -sha256 -config $base/etc/middle.conf -extensions v3_ca -out $csr_file -days $days $log"

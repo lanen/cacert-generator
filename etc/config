@@ -1,0 +1,31 @@
+#!/bin/bash
+#https://linux.cn/article-5443-weibo.html
+
+# File extend name
+# CA certificate
+ca_file_ext=".pem"
+csr_file_ext=".csr"
+
+# CA private key
+ca_private_key_file_ext=".pem"
+
+#CA serial number file
+ca_serial_file="serial"
+
+#CA text database file
+ca_database_file="index.txt"
+
+ca_crl_number_file="crlnumber"
+
+# certificate output file
+private_key_dir="private"
+certs_dir="certs"
+
+# 用于定位ca 和 middle 。 在middle_ca 使用到
+d=`pwd`
+root_dir="root"
+middle_dir="middle"
+
+prog=/usr/bin/openssl
+
+#log=">/dev/null 2>&1"
