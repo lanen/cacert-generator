@@ -16,4 +16,13 @@
 ./bin/rootkey
 ./bin/middlekey
 ./bin/middlesign
-```
+``
+
+编辑 subject
+
+使用 ./bin/signsubject xxx 前缀
+
+使用 ./bin/cas/createkeystore 转化openssl 证书
+
+将 cas_client cas_server 双向信任
+将 cas_client cas_server 导入 jvm 证书库`
